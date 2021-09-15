@@ -1,8 +1,8 @@
-pragma solidity 0.6.12;
+pragma solidity 0.8.0;
 
-import '@pancakeswap/pancake-swap-lib/contracts/math/SafeMath.sol';
-import '@pancakeswap/pancake-swap-lib/contracts/token/BEP20/IBEP20.sol';
-import '@pancakeswap/pancake-swap-lib/contracts/token/BEP20/SafeBEP20.sol';
+import './math/SafeMath.sol';
+import './token/BEP20/IBEP20.sol';
+import './token/BEP20/SafeBEP20.sol';
 
 // import "@nomiclabs/buidler/console.sol";
 
