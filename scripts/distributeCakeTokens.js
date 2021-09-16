@@ -61,10 +61,14 @@ function timeout(ms) {
     const addreses = await getAllPoolAddresses(0)
     
     for (var i = 0; i < addreses.length; i ++) {
-        await mint(addreses[0]);
+        await mint(addreses[i]);
     }
 
-    await mint("0x3812d358fd62667Db446E2B895422b762bAB690f");
+    const admins = JSON.parse(require("fs").readFileSync('../wagyu-addresses/admins.json', 'utf8'))
+
+    for (var i=0; i < admins.airdrop.length; i++) {
+      await mint(admins.airdrop[i]);
+    }
   
     
   }

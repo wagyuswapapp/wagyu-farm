@@ -63,14 +63,21 @@ async function main() {
   const WagyuToken = await deploy("CakeToken");
 
   const WVLX = await deploy("WVLX");
-  const VETHER = await deploy("VETHER");
-  const VUSDT = await deploy("VUSDT");
-  const VBNB = await deploy("VBNB");
+
+  const admins = JSON.parse(require("fs").readFileSync('../wagyu-addresses/admins.json', 'utf8'))
+
+  //deplay WETH, BUSD, USDT, USDC
+  for (var i=0; i < admins.defaultTokens.length; i++) {
+    await deploy(admins.defaultTokens[i]);
+  }
+
   const SauceBar = await deploy("SyrupBar", [WagyuToken]);
 
   const _cakePerBlock = "40000000000000000000"
+  
+  // TODO: check right block
   const _startBlock = 1
-  const _devaddr = "0x02371a616F6148039bB4C7d8c5bF626c6391D084"
+  const _devaddr = admins._devaddr
   
   //Timelock
   const Timelock = await deploy("Timelock", [_devaddr, 21700]);
@@ -83,11 +90,11 @@ async function main() {
 
   const WagyuVault = await deploy("WagyuVault", [WagyuToken, SauceBar, MasterChef, _devaddr, _devaddr]);
 
-  const VaultOwner = await deploy("VaultOwner", [WagyuVault]);
+  await deploy("VaultOwner", [WagyuVault]);
 
-  const VlxStaking = await deploy("BnbStaking", [WVLX, WagyuToken, '42000000000000000', 689000, 1207400, _devaddr, WVLX]);
+  await deploy("BnbStaking", [WVLX, WagyuToken, '42000000000000000', 689000, 1207400, _devaddr, WVLX]);
 
-  const SousChefFactory = await deploy("SousChefFactory");
+  await deploy("SousChefFactory");
 
   //MasterChef _chef, IBEP20 _wagyu, address _admin, address _receiver
   //const LotteryRewardPool = await deploy("LotteryRewardPool", [MasterChef, WagyuToken, _devaddr, _devaddr]);

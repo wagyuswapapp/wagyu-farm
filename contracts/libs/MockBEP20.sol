@@ -7,7 +7,7 @@ contract MockBEP20 is BEP20 {
         string memory name,
         string memory symbol,
         uint256 supply
-    ) public BEP20(name, symbol) {
+    ) public BEP20(name, symbol, 18) {
         _mint(msg.sender, supply);
 
     }

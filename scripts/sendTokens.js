@@ -20,9 +20,8 @@ async function mint(name) {
   return true
 }
 
-DEV_TEST_ADDRESS = "0x3812d358fd62667Db446E2B895422b762bAB690f"
 
-async function send(name) {
+async function send(name, DEV_TEST_ADDRESS) {
   console.log("send " + name)
   const signers = await ethers.getSigners();
   const nonce = await ethers.provider.getTransactionCount(signers[0]._address)
@@ -49,14 +48,17 @@ function get(chainId) {
 async function main() {
   // We get the contract to deploy
 
-  await mint("VBNB")
-  await mint("VETHER")
-  await mint("VUSDT");
+  const admins = JSON.parse(require("fs").readFileSync('../wagyu-addresses/admins.json', 'utf8'))
 
-  await send("VBNB")
-  await send("VETHER")
-  await send("VUSDT");
+  for (var j=0; j < admins.defaultTokens.length; j++) {
+    await mint(admins.defaultTokens[j])
+  }
 
+  for (var i=0; i < admins.airdrop.length; i++) {
+    for (var j=0; j < admins.defaultTokens.length; j++) {
+      await send(admins.defaultTokens[j], admins.airdrop[i])
+    }
+  }
   
 }
 

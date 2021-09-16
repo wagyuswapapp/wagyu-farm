@@ -6,7 +6,7 @@ import "./math/SafeMath.sol";
 import "./CakeToken.sol";
 
 // SyrupBar with Governance.
-contract SyrupBar is BEP20('SyrupBar Token', 'SYRUP') {
+contract SyrupBar is BEP20('SyrupBar Token', 'SYRUP', 18) {
     using SafeMath for uint256;
     
     /// @notice Creates `_amount` token to `_to`. Must only be called by the owner (MasterChef).

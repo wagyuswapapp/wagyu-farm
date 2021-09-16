@@ -56,9 +56,11 @@ function get(chainId) {
 
 async function main() {
 
-  await createTestPool("VBNB")
-  await createTestPool("VETHER")
-  await createTestPool("VUSDT");
+  const admins = JSON.parse(require("fs").readFileSync('../wagyu-addresses/admins.json', 'utf8'))
+
+  for (var j=0; j < admins.defaultTokens.length; j++) {
+      await createTestPool(admins.defaultTokens[j]);
+  }
   
 }
 

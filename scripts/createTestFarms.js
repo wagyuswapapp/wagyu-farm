@@ -42,9 +42,12 @@ async function main() {
 
   const data = get(chainId)
 
-  await createTestFarms(data.VLX_VBNB_LP.pair)
-  await createTestFarms(data.VLX_VETHER_LP.pair)
-  await createTestFarms(data.VLX_VUSDT_LP.pair)
+  const admins = JSON.parse(require("fs").readFileSync('../wagyu-addresses/admins.json', 'utf8'))
+
+  for (var j=0; j < admins.defaultTokens.length; j++) {
+      const name = "VLX_" + admins.defaultTokens[j] + "_LP"
+      await createTestFarms(data[name].pair);
+  }
 
   
 }
