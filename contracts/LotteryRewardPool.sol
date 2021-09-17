@@ -4,19 +4,19 @@ import './token/BEP20/IBEP20.sol';
 import './token/BEP20/SafeBEP20.sol';
 import './access/Ownable.sol';
 
-import './MasterChef.sol';
+import './WAGFarm.sol';
 
 contract LotteryRewardPool is Ownable {
     using SafeBEP20 for IBEP20;
 
-    MasterChef public chef;
+    WAGFarm public chef;
     address public adminAddress;
     address public receiver;
     IBEP20 public lptoken;
     IBEP20 public cake;
 
     constructor(
-        MasterChef _chef,
+        WAGFarm _chef,
         IBEP20 _cake,
         address _admin,
         address _receiver

@@ -6,8 +6,8 @@ import './token/BEP20/SafeBEP20.sol';
 
 // import "@nomiclabs/buidler/console.sol";
 
-// SousChef is the chef of new tokens. He can make yummy food and he is a fair guy as well as MasterChef.
-contract SousChef {
+// SousChef is the chef of new tokens. He can make yummy food and he is a fair guy as well as WAGFarm.
+contract WAGStakingPool {
     using SafeMath for uint256;
     using SafeBEP20 for IBEP20;
 

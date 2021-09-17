@@ -5,7 +5,7 @@ import './token/BEP20/IBEP20.sol';
 import './token/BEP20/SafeBEP20.sol';
 import './utils/ReentrancyGuard.sol';
 
-contract SousChefInitializable is Ownable, ReentrancyGuard {
+contract WAGStakingPoolInitializable is Ownable, ReentrancyGuard {
     using SafeMath for uint256;
     using SafeBEP20 for IBEP20;
 

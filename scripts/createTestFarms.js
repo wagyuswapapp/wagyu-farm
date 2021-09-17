@@ -14,14 +14,11 @@ async function createTestFarms(_lpToken) {
   const { chainId } = await ethers.provider.getNetwork();
   //const blockNumber = await ethers.provider.getBlockNumber();
   const data = get(chainId)
-  //console.log("MasterChef", data.MasterChef)
-  const MasterChef = await ethers.getContractAt("MasterChef", data.MasterChef);
+  const WAGFarm = await ethers.getContractAt("WAGFarm", data.WAGFarm);
   const _allocPoint  = "1000000000000000000000"
   const _withUpdate = false
-  console.log({ _allocPoint, _lpToken, _withUpdate })
-  const SousPool = await MasterChef.add(_allocPoint,_lpToken, _withUpdate, { nonce, gasLimit: 9000000 })
+  const SousPool = await WAGFarm.add(_allocPoint,_lpToken, _withUpdate, { nonce, gasLimit: 9000000 })
   
-  //console.log("MasterChef Farm", SousPool);
   return true
 }
 
@@ -39,13 +36,14 @@ async function main() {
 
   const { chainId } = await ethers.provider.getNetwork();
   
-
   const data = get(chainId)
 
   const admins = JSON.parse(require("fs").readFileSync('../wagyu-addresses/admins.json', 'utf8'))
 
-  for (var j=0; j < admins.defaultTokens.length; j++) {
-      const name = "VLX_" + admins.defaultTokens[j] + "_LP"
+  const defaultTokens = admins.defaultTokens[chainId.toString()];
+
+  for (var j=0; j < defaultTokens.length; j++) {
+      const name = "VLX_" + defaultTokens[j] + "_LP"
       await createTestFarms(data[name].pair);
   }
 

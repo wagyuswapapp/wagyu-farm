@@ -21,7 +21,6 @@ function save(chainId, name, value) {
 }
 
 async function deploy(name, args=[]) {
-  console.log("deploy " + name, args)
   const signers = await ethers.getSigners();
   const nonce = await ethers.provider.getTransactionCount(signers[0]._address)
   const { chainId } = await ethers.provider.getNetwork();
@@ -30,19 +29,8 @@ async function deploy(name, args=[]) {
   const token = await Token.deploy.apply(Token, finalArgs);
   
   save(chainId, name, token.address); 
-  console.log("deployed ", name, token.address);
+  console.log("deployed ", name, "args", args, "contract address: ", token.address);
   return token.address
-
-}
-
-async function transferOwnership(address, newOwnwer) {
-
-  const contract = await ethers.getContractAt("Ownable", address)
-
-  const signers = await ethers.getSigners();
-  const nonce = await ethers.provider.getTransactionCount(signers[0]._address)
-
-  return await contract.transferOwnership(newOwnwer, { nonce })
 
 }
 
@@ -60,44 +48,43 @@ async function main() {
   
   
   const Multicall = await deploy("Multicall");
-  const WagyuToken = await deploy("CakeToken");
+  const WAGToken = await deploy("WAGToken");
 
   const WVLX = await deploy("WVLX");
 
   const admins = JSON.parse(require("fs").readFileSync('../wagyu-addresses/admins.json', 'utf8'))
 
+  const defaultTokens = admins.defaultTokens[chainId.toString()];
+
   //deplay WETH, BUSD, USDT, USDC
-  for (var i=0; i < admins.defaultTokens.length; i++) {
-    await deploy(admins.defaultTokens[i]);
+  for (var i=0; i < defaultTokens.length; i++) {
+    await deploy(defaultTokens[i]);
   }
 
-  const SauceBar = await deploy("SyrupBar", [WagyuToken]);
+  const WAGStake = await deploy("WAGStake", [WAGToken]);
 
   const _cakePerBlock = "40000000000000000000"
   
-  // TODO: check right block
-  const _startBlock = 1
+  const blockNumber = await ethers.provider.getBlockNumber();
+
+  const _startBlock = blockNumber
   const _devaddr = admins._devaddr
   
   //Timelock
   const Timelock = await deploy("Timelock", [_devaddr, 21700]);
 
-  const MasterChef = await deploy("MasterChef", [WagyuToken, SauceBar, _devaddr, _cakePerBlock, _startBlock]);
+  const WAGFarm = await deploy("WAGFarm", [WAGToken, WAGStake, _devaddr, _cakePerBlock, _startBlock]);
 
-  //await transferOwnership(MasterChef, Timelock);
-  //await transferOwnership(WagyuToken, MasterChef);
-  //await transferOwnership(SauceBar, MasterChef);
-
-  const WagyuVault = await deploy("WagyuVault", [WagyuToken, SauceBar, MasterChef, _devaddr, _devaddr]);
+  const WagyuVault = await deploy("WagyuVault", [WAGToken, WAGStake, WAGFarm, _devaddr, _devaddr]);
 
   await deploy("VaultOwner", [WagyuVault]);
 
-  await deploy("BnbStaking", [WVLX, WagyuToken, '42000000000000000', 689000, 1207400, _devaddr, WVLX]);
+  await deploy("VLXStaking", [WVLX, WAGToken, '42000000000000000', 689000, 1207400, _devaddr, WVLX]);
 
-  await deploy("SousChefFactory");
+  await deploy("WAGStakingFactory");
 
   //MasterChef _chef, IBEP20 _wagyu, address _admin, address _receiver
-  //const LotteryRewardPool = await deploy("LotteryRewardPool", [MasterChef, WagyuToken, _devaddr, _devaddr]);
+  //const LotteryRewardPool = await deploy("LotteryRewardPool", [WAGFarm, WagyuToken, _devaddr, _devaddr]);
 
   
   

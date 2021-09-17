@@ -23,15 +23,15 @@ async function createTestPool(name) {
   const { chainId } = await ethers.provider.getNetwork();
   const blockNumber = await ethers.provider.getBlockNumber();
   const data = get(chainId)
-  const SousChefFactory = await ethers.getContractAt("SousChefFactory", data.SousChefFactory);
+  const WAGStakingFactory = await ethers.getContractAt("WAGStakingFactory", data.WAGStakingFactory);
   const _stakedToken  = data[name]   //IBEP20
-  const _rewardToken = data.CakeToken //IBEP20
+  const _rewardToken = data.WAGToken //IBEP20
   const _rewardPerBlock = "10000000000"; //uint256
   const _startBlock = blockNumber //uint256
   const _bonusEndBlock = _startBlock + 100000; //uint256
   const _poolLimitPerUser = "1000000000000000000000" //uint256
   const _admin = signers[0]._address; //address
-  const SousPool = await SousChefFactory.deployPool(_stakedToken,_rewardToken, _rewardPerBlock,  _startBlock, _bonusEndBlock,  _poolLimitPerUser, _admin, { nonce, gasLimit: 9000000 })
+  const SousPool = await WAGStakingFactory.deployPool(_stakedToken,_rewardToken, _rewardPerBlock,  _startBlock, _bonusEndBlock,  _poolLimitPerUser, _admin, { nonce, gasLimit: 9000000 })
   
   const result = await SousPool.wait(1)
   const event = result.events.find((x)=> x.event == "NewSousChefContract");
@@ -58,8 +58,12 @@ async function main() {
 
   const admins = JSON.parse(require("fs").readFileSync('../wagyu-addresses/admins.json', 'utf8'))
 
-  for (var j=0; j < admins.defaultTokens.length; j++) {
-      await createTestPool(admins.defaultTokens[j]);
+  const { chainId } = await ethers.provider.getNetwork();
+
+  const defaultTokens = admins.defaultTokens[chainId.toString()];
+
+  for (var j=0; j < defaultTokens.length; j++) {
+      await createTestPool(defaultTokens[j]);
   }
   
 }

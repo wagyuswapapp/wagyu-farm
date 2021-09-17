@@ -54,7 +54,7 @@ contract WagyuVault is Ownable, Pausable {
      * @notice Constructor
      * @param _token: Wagyu token contract
      * @param _receiptToken: Sauce token contract
-     * @param _masterchef: MasterChef contract
+     * @param _masterchef: WAGFarm contract
      * @param _admin: address of the admin
      * @param _treasury: address of the treasury (collects fees)
      */
@@ -328,7 +328,7 @@ contract WagyuVault is Ownable, Pausable {
 
     /**
      * @notice Calculates the total underlying tokens
-     * @dev It includes tokens held by the contract and held in MasterChef
+     * @dev It includes tokens held by the contract and held in WAGFarm
      */
     function balanceOf() public view returns (uint256) {
         (uint256 amount, ) = IMasterChef(masterchef).userInfo(0, address(this));

@@ -5,8 +5,8 @@ import './token/BEP20/IBEP20.sol';
 import './token/BEP20/SafeBEP20.sol';
 import './access/Ownable.sol';
 
-import "./CakeToken.sol";
-import "./SyrupBar.sol";
+import "./WAGToken.sol";
+import "./WAGStake.sol";
 
 // import "@nomiclabs/buidler/console.sol";
 
@@ -23,14 +23,14 @@ interface IMigratorChef {
     function migrate(IBEP20 token) external returns (IBEP20);
 }
 
-// MasterChef is the master of Cake. He can make Cake and he is a fair guy.
+// WAGFarm is the master of WAG. He can make WAG and he is a fair guy.
 //
 // Note that it's ownable and the owner wields tremendous power. The ownership
 // will be transferred to a governance smart contract once CAKE is sufficiently
 // distributed and the community can show to govern itself.
 //
 // Have fun reading it. Hopefully it's bug-free. God bless.
-contract MasterChef is Ownable {
+contract WAGFarm is Ownable {
     using SafeMath for uint256;
     using SafeBEP20 for IBEP20;
 
@@ -60,9 +60,9 @@ contract MasterChef is Ownable {
     }
 
     // The CAKE TOKEN!
-    CakeToken public cake;
+    WAGToken public cake;
     // The SYRUP TOKEN!
-    SyrupBar public syrup;
+    WAGStake public syrup;
     // Dev address.
     address public devaddr;
     // CAKE tokens created per block.
@@ -86,8 +86,8 @@ contract MasterChef is Ownable {
     event EmergencyWithdraw(address indexed user, uint256 indexed pid, uint256 amount);
 
     constructor(
-        CakeToken _cake,
-        SyrupBar _syrup,
+        WAGToken _cake,
+        WAGStake _syrup,
         address _devaddr,
         uint256 _cakePerBlock,
         uint256 _startBlock
@@ -225,10 +225,10 @@ contract MasterChef is Ownable {
         pool.lastRewardBlock = block.number;
     }
 
-    // Deposit LP tokens to MasterChef for CAKE allocation.
+    // Deposit LP tokens to WAGFarm for WAG allocation.
     function deposit(uint256 _pid, uint256 _amount) public {
 
-        require (_pid != 0, 'deposit CAKE by staking');
+        require (_pid != 0, 'deposit WAG by staking');
 
         PoolInfo storage pool = poolInfo[_pid];
         UserInfo storage user = userInfo[_pid][msg.sender];
@@ -247,7 +247,7 @@ contract MasterChef is Ownable {
         emit Deposit(msg.sender, _pid, _amount);
     }
 
-    // Withdraw LP tokens from MasterChef.
+    // Withdraw LP tokens from WAGFarm.
     function withdraw(uint256 _pid, uint256 _amount) public {
 
         require (_pid != 0, 'withdraw CAKE by unstaking');
@@ -268,7 +268,7 @@ contract MasterChef is Ownable {
         emit Withdraw(msg.sender, _pid, _amount);
     }
 
-    // Stake CAKE tokens to MasterChef
+    // Stake WAG tokens to WAGFarm
     function enterStaking(uint256 _amount) public {
         PoolInfo storage pool = poolInfo[0];
         UserInfo storage user = userInfo[0][msg.sender];
@@ -289,7 +289,7 @@ contract MasterChef is Ownable {
         emit Deposit(msg.sender, 0, _amount);
     }
 
-    // Withdraw CAKE tokens from STAKING.
+    // Withdraw WAG tokens from STAKING.
     function leaveStaking(uint256 _amount) public {
         PoolInfo storage pool = poolInfo[0];
         UserInfo storage user = userInfo[0][msg.sender];

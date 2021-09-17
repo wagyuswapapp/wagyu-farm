@@ -3,8 +3,8 @@ pragma solidity 0.8.0;
 import "./token/BEP20/BEP20.sol";
 import "./math/SafeMath.sol";
 
-// CakeToken with Governance.
-contract CakeToken is BEP20('WagyuSwap Token', 'WAG', 18) {
+// WAGToken with Governance.
+contract WAGToken is BEP20('WagyuSwap Token', 'WAG', 18) {
     using SafeMath for uint256;
     /// @notice Creates `_amount` token to `_to`. Must only be called by the owner (MasterChef).
     function mint(address _to, uint256 _amount) public onlyOwner {

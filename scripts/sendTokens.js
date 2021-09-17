@@ -50,13 +50,19 @@ async function main() {
 
   const admins = JSON.parse(require("fs").readFileSync('../wagyu-addresses/admins.json', 'utf8'))
 
-  for (var j=0; j < admins.defaultTokens.length; j++) {
-    await mint(admins.defaultTokens[j])
+  const { chainId } = await ethers.provider.getNetwork();
+
+  const defaultTokens = admins.defaultTokens[chainId.toString()];
+  const airdrop = admins.airdrop[chainId.toString()];
+
+
+  for (var j=0; j < defaultTokens.length; j++) {
+    await mint(defaultTokens[j])
   }
 
-  for (var i=0; i < admins.airdrop.length; i++) {
-    for (var j=0; j < admins.defaultTokens.length; j++) {
-      await send(admins.defaultTokens[j], admins.airdrop[i])
+  for (var i=0; i < airdrop.length; i++) {
+    for (var j=0; j < defaultTokens.length; j++) {
+      await send(defaultTokens[j], airdrop[i])
     }
   }
   

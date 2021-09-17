@@ -35,6 +35,11 @@ module.exports = {
       port: 7545,
       network_id: "101"
     },
+    mainnet: {
+      url: "https://mainnet.velas.com/rpc",
+      port: 7545,
+      network_id: "106"
+    },
     test: {
       url: "http://127.0.0.1:7545",
       port: 7545,

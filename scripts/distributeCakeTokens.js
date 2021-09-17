@@ -7,15 +7,15 @@ function timeout(ms) {
   }
   
   
-  async function mint(address) {
-    console.log("mint " + address)
+  async function mint(address, amount) {
+    console.log("mint " + address, amount)
     const signers = await ethers.getSigners();
     const nonce = await ethers.provider.getTransactionCount(signers[0]._address)
     const { chainId } = await ethers.provider.getNetwork();
     const data = get(chainId)
-    const CakeToken = await ethers.getContractAt("CakeToken", data.CakeToken);
-    console.log(CakeToken);
-    const token = await CakeToken['mint(address,uint256)'](address, "100000000000000000000000", { nonce, gasLimit: 9000000 })
+    const WAGToken = await ethers.getContractAt("WAGToken", data.WAGToken);
+    
+    const token = await WAGToken['mint(address,uint256)'](address, amount, { nonce, gasLimit: 9000000 })
     
     console.log("done ", token);
     return true
@@ -38,12 +38,12 @@ function timeout(ms) {
     
     const data = get(chainId)
 
-    const SousChefFactory = await ethers.getContractAt("SousChefFactory", data.SousChefFactory);
+    const WAGStakingFactory = await ethers.getContractAt("WAGStakingFactory", data.WAGStakingFactory);
     
     var poolAddress = null;
 
     try {
-        poolAddress = await SousChefFactory.poolAddresses(index)
+        poolAddress = await WAGStakingFactory.poolAddresses(index)
     }
     catch(err) {
         return []
@@ -58,18 +58,30 @@ function timeout(ms) {
   async function main() {
     // We get the contract to deploy
   
-    const addreses = await getAllPoolAddresses(0)
-    
-    for (var i = 0; i < addreses.length; i ++) {
-        await mint(addreses[i]);
+    const { chainId } = await ethers.provider.getNetwork();
+
+    if (chainId.toString() === "111") {
+
+      const addreses = await getAllPoolAddresses(0)
+      
+      for (var i = 0; i < addreses.length; i ++) {
+          await mint(addreses[i], "100000000000000000000000");
+      }
+   
     }
 
     const admins = JSON.parse(require("fs").readFileSync('../wagyu-addresses/admins.json', 'utf8'))
 
-    for (var i=0; i < admins.airdrop.length; i++) {
-      await mint(admins.airdrop[i]);
+    
+
+    const airdrop = admins.airdrop[chainId.toString()];
+  
+
+    for (var i=0; i < airdrop.length; i++) {
+      await mint(airdrop[i], "100000000000000000000000");
     }
   
+    mint(admins._devaddr, "500000000" + "000000000000000000");
     
   }
   
