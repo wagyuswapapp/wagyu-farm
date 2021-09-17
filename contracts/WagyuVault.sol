@@ -8,22 +8,21 @@ import './math/SafeMath.sol';
 import './utils/Address.sol';
 import './utils/Pausable.sol';
 
-contract WagyuVault is Ownable, Pausable {
+// File: contracts/CakeVault.sol
 
+contract WagyuVault is Ownable, Pausable {
     using SafeBEP20 for IBEP20;
     using SafeMath for uint256;
 
     struct UserInfo {
         uint256 shares; // number of shares for a user
         uint256 lastDepositedTime; // keeps track of deposited time for potential penalty
-        uint256 wagyuAtLastUserAction; // keeps track of wagyu deposited at the last user action
+        uint256 cakeAtLastUserAction; // keeps track of cake deposited at the last user action
         uint256 lastUserActionTime; // keeps track of the last user action time
     }
 
-    uint256 public constant UINT256_MAX = type(uint256).max - 1;
-
-    IBEP20 public immutable token; // Wagyu token
-    IBEP20 public immutable receiptToken; // Sauce token
+    IBEP20 public immutable token; // Cake token
+    IBEP20 public immutable receiptToken; // Syrup token
 
     IMasterChef public immutable masterchef;
 
@@ -52,9 +51,9 @@ contract WagyuVault is Ownable, Pausable {
 
     /**
      * @notice Constructor
-     * @param _token: Wagyu token contract
-     * @param _receiptToken: Sauce token contract
-     * @param _masterchef: WAGFarm contract
+     * @param _token: Cake token contract
+     * @param _receiptToken: Syrup token contract
+     * @param _masterchef: MasterChef contract
      * @param _admin: address of the admin
      * @param _treasury: address of the treasury (collects fees)
      */
@@ -72,7 +71,7 @@ contract WagyuVault is Ownable, Pausable {
         treasury = _treasury;
 
         // Infinite approve
-        IBEP20(_token).safeApprove(address(_masterchef), UINT256_MAX);
+        IBEP20(_token).safeApprove(address(_masterchef), 0xFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF);
     }
 
     /**
@@ -88,14 +87,14 @@ contract WagyuVault is Ownable, Pausable {
      */
     modifier notContract() {
         require(!_isContract(msg.sender), "contract not allowed");
-//        require(msg.sender == tx.origin, "proxy contract not allowed");
+        require(msg.sender == tx.origin, "proxy contract not allowed");
         _;
     }
 
     /**
-     * @notice Deposits funds into the Wagyu Vault
+     * @notice Deposits funds into the Cake Vault
      * @dev Only possible when contract not paused.
-     * @param _amount: number of tokens to deposit (in WAGYU)
+     * @param _amount: number of tokens to deposit (in CAKE)
      */
     function deposit(uint256 _amount) external whenNotPaused notContract {
         require(_amount > 0, "Nothing to deposit");
@@ -115,7 +114,7 @@ contract WagyuVault is Ownable, Pausable {
 
         totalShares = totalShares.add(currentShares);
 
-        user.wagyuAtLastUserAction = user.shares.mul(balanceOf()).div(totalShares);
+        user.cakeAtLastUserAction = user.shares.mul(balanceOf()).div(totalShares);
         user.lastUserActionTime = block.timestamp;
 
         _earn();
@@ -131,7 +130,7 @@ contract WagyuVault is Ownable, Pausable {
     }
 
     /**
-     * @notice Reinvests WAGYU tokens into MasterChef
+     * @notice Reinvests CAKE tokens into MasterChef
      * @dev Only possible when contract not paused.
      */
     function harvest() external notContract whenNotPaused {
@@ -217,7 +216,7 @@ contract WagyuVault is Ownable, Pausable {
     }
 
     /**
-     * @notice Withdraw unexpected tokens sent to the Wagyu Vault
+     * @notice Withdraw unexpected tokens sent to the Cake Vault
      */
     function inCaseTokensGetStuck(address _token) external onlyAdmin {
         require(_token != address(token), "Token cannot be same as deposit token");
@@ -247,9 +246,9 @@ contract WagyuVault is Ownable, Pausable {
 
     /**
      * @notice Calculates the expected harvest reward from third party
-     * @return Expected reward to collect in WAGYU
+     * @return Expected reward to collect in CAKE
      */
-    function calculateHarvestWagyuRewards() external view returns (uint256) {
+    function calculateHarvestCakeRewards() external view returns (uint256) {
         uint256 amount = IMasterChef(masterchef).pendingWagyu(0, address(this));
         amount = amount.add(available());
         uint256 currentCallFee = amount.mul(callFee).div(10000);
@@ -259,9 +258,9 @@ contract WagyuVault is Ownable, Pausable {
 
     /**
      * @notice Calculates the total pending rewards that can be restaked
-     * @return Returns total pending wagyu rewards
+     * @return Returns total pending cake rewards
      */
-    function calculateTotalPendingWagyuRewards() external view returns (uint256) {
+    function calculateTotalPendingCakeRewards() external view returns (uint256) {
         uint256 amount = IMasterChef(masterchef).pendingWagyu(0, address(this));
         amount = amount.add(available());
 
@@ -276,7 +275,7 @@ contract WagyuVault is Ownable, Pausable {
     }
 
     /**
-     * @notice Withdraws from funds from the Wagyu Vault
+     * @notice Withdraws from funds from the Cake Vault
      * @param _shares: Number of shares to withdraw
      */
     function withdraw(uint256 _shares) public notContract {
@@ -306,9 +305,9 @@ contract WagyuVault is Ownable, Pausable {
         }
 
         if (user.shares > 0) {
-            user.wagyuAtLastUserAction = user.shares.mul(balanceOf()).div(totalShares);
+            user.cakeAtLastUserAction = user.shares.mul(balanceOf()).div(totalShares);
         } else {
-            user.wagyuAtLastUserAction = 0;
+            user.cakeAtLastUserAction = 0;
         }
 
         user.lastUserActionTime = block.timestamp;
@@ -328,7 +327,7 @@ contract WagyuVault is Ownable, Pausable {
 
     /**
      * @notice Calculates the total underlying tokens
-     * @dev It includes tokens held by the contract and held in WAGFarm
+     * @dev It includes tokens held by the contract and held in MasterChef
      */
     function balanceOf() public view returns (uint256) {
         (uint256 amount, ) = IMasterChef(masterchef).userInfo(0, address(this));
