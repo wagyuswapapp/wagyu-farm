@@ -249,7 +249,7 @@ contract WagyuVault is Ownable, Pausable {
      * @return Expected reward to collect in CAKE
      */
     function calculateHarvestCakeRewards() external view returns (uint256) {
-        uint256 amount = IMasterChef(masterchef).pendingWagyu(0, address(this));
+        uint256 amount = IMasterChef(masterchef).pendingCake(0, address(this));
         amount = amount.add(available());
         uint256 currentCallFee = amount.mul(callFee).div(10000);
 
@@ -261,7 +261,7 @@ contract WagyuVault is Ownable, Pausable {
      * @return Returns total pending cake rewards
      */
     function calculateTotalPendingCakeRewards() external view returns (uint256) {
-        uint256 amount = IMasterChef(masterchef).pendingWagyu(0, address(this));
+        uint256 amount = IMasterChef(masterchef).pendingCake(0, address(this));
         amount = amount.add(available());
 
         return amount;

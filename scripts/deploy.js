@@ -47,7 +47,7 @@ async function main() {
   //https://github.com/wagyu-swap/wagyu-swap-interface/blob/dev/src/constants/multicall/index.ts
   
   
-  const Multicall = await deploy("Multicall");
+  const Multicall = await deploy("Multicall2");
   const WAGToken = await deploy("WAGToken");
 
   const WVLX = await deploy("WVLX");

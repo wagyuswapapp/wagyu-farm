@@ -9,7 +9,7 @@ interface IMasterChef {
 
     function leaveStaking(uint256 _amount) external;
 
-    function pendingWagyu(uint256 _pid, address _user) external view returns (uint256);
+    function pendingCake(uint256 _pid, address _user) external view returns (uint256);
 
     function userInfo(uint256 _pid, address _user) external view returns (uint256, uint256);
 
