@@ -39,7 +39,7 @@ contract WAGStakingPool {
     // The SYRUP TOKEN!
     IBEP20 public syrup;
     // rewards created per block.
-    uint256 public rewardPerTimestamp;
+    uint256 public rewardPerSecond;
 
     // Info.
     PoolInfo public poolInfo;
@@ -60,12 +60,12 @@ contract WAGStakingPool {
 
     constructor(
         IBEP20 _syrup,
-        uint256 _rewardPerTimestamp,
+        uint256 _rewardPerSecond,
         uint256 _startTimestamp,
         uint256 _endTimestamp
     ) public {
         syrup = _syrup;
-        rewardPerTimestamp = _rewardPerTimestamp;
+        rewardPerSecond = _rewardPerSecond;
         startTimestamp = _startTimestamp;
         bonusEndTimestamp = _endTimestamp;
 
@@ -99,7 +99,7 @@ contract WAGStakingPool {
         uint256 stakedSupply = syrup.balanceOf(address(this));
         if (block.timestamp > pool.lastRewardTimestamp && stakedSupply != 0) {
             uint256 multiplier = getMultiplier(pool.lastRewardTimestamp, block.timestamp);
-            uint256 tokenReward = multiplier.mul(rewardPerTimestamp);
+            uint256 tokenReward = multiplier.mul(rewardPerSecond);
             accRewardPerShare = accRewardPerShare.add(tokenReward.mul(1e12).div(stakedSupply));
         }
         return user.amount.mul(accRewardPerShare).div(1e12).sub(user.rewardDebt).add(user.rewardPending);
@@ -116,7 +116,7 @@ contract WAGStakingPool {
             return;
         }
         uint256 multiplier = getMultiplier(poolInfo.lastRewardTimestamp, block.timestamp);
-        uint256 tokenReward = multiplier.mul(rewardPerTimestamp);
+        uint256 tokenReward = multiplier.mul(rewardPerSecond);
 
         poolInfo.accRewardPerShare = poolInfo.accRewardPerShare.add(tokenReward.mul(1e12).div(syrupSupply));
         poolInfo.lastRewardTimestamp = block.timestamp;
