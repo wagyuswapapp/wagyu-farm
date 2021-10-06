@@ -14,8 +14,8 @@ contract WAGStakingFactory is Ownable {
      * @notice Deploy the pool
      * @param _stakedToken: staked token address
      * @param _rewardToken: reward token address
-     * @param _rewardPerBlock: reward per block (in rewardToken)
-     * @param _startBlock: start block
+     * @param _rewardPerSecond: reward per block (in rewardToken)
+     * @param _startTimestamp: start block
      * @param _endBlock: end block
      * @param _poolLimitPerUser: pool limit per user in stakedToken (if any, else 0)
      * @param _admin: admin address with ownership
@@ -24,9 +24,9 @@ contract WAGStakingFactory is Ownable {
     function deployPool(
         IBEP20 _stakedToken,
         IBEP20 _rewardToken,
-        uint256 _rewardPerBlock,
-        uint256 _startBlock,
-        uint256 _bonusEndBlock,
+        uint256 _rewardPerSecond,
+        uint256 _startTimestamp,
+        uint256 _bonusEndTimestamp,
         uint256 _poolLimitPerUser,
         address _admin
     ) external onlyOwner {
@@ -35,7 +35,7 @@ contract WAGStakingFactory is Ownable {
         require(_stakedToken != _rewardToken, "Tokens must be be different");
 
         bytes memory bytecode = type(WAGStakingPoolInitializable).creationCode;
-        bytes32 salt = keccak256(abi.encodePacked(_stakedToken, _rewardToken, _startBlock));
+        bytes32 salt = keccak256(abi.encodePacked(_stakedToken, _rewardToken, _startTimestamp));
         address sousChefAddress;
 
         assembly {
@@ -45,9 +45,9 @@ contract WAGStakingFactory is Ownable {
         WAGStakingPoolInitializable(sousChefAddress).initialize(
             _stakedToken,
             _rewardToken,
-            _rewardPerBlock,
-            _startBlock,
-            _bonusEndBlock,
+            _rewardPerSecond,
+            _startTimestamp,
+            _bonusEndTimestamp,
             _poolLimitPerUser,
             _admin
         );

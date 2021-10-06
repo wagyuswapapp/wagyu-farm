@@ -36,15 +36,9 @@ async function main() {
   const { chainId } = await ethers.provider.getNetwork();
   
   const data = get(chainId)
-
-  const admins = JSON.parse(require("fs").readFileSync('../wagyu-addresses/admins.json', 'utf8'))
-
-  const defaultTokens = admins.defaultTokens[chainId.toString()];
-
-  for (var j=0; j < defaultTokens.length; j++) {
-      const name = "VLX_" + defaultTokens[j] + "_LP"
-      await createTestFarms(data[name].pair);
-  }
+  
+  const name = "VLX_WAG_LP"
+  await createTestFarms(data[name].pair);
 
   
 }

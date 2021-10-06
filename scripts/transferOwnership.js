@@ -1,4 +1,9 @@
-
+function timeout(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+async function sleep() {
+  return await timeout(10000);
+}
 
 function get(chainId) {
   const fs = require("fs");
@@ -18,7 +23,9 @@ async function transferOwnership(address, newOwnwer) {
   const nonce = await ethers.provider.getTransactionCount(signers[0]._address)
 
   console.log("transfer ownership, contract ", address, " new owner", newOwnwer)
+  await sleep(3000)
   return await contract.transferOwnership(newOwnwer, { nonce })
+  
   
 
 }

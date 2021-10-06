@@ -23,7 +23,7 @@ contract WAGStakingPool {
         //   pending reward = (user.amount * pool.accRewardPerShare) - user.rewardDebt + user.rewardPending
         //
         // Whenever a user deposits or withdraws SYRUP tokens to a pool. Here's what happens:
-        //   1. The pool's `accRewardPerShare` (and `lastRewardBlock`) gets updated.
+        //   1. The pool's `accRewardPerShare` (and `lastRewardTimestamp`) gets updated.
         //   2. User receives the pending reward sent to his/her address.
         //   3. User's `amount` gets updated.
         //   3. User's `amount` gets updated.
@@ -32,14 +32,14 @@ contract WAGStakingPool {
 
     // Info of Pool
     struct PoolInfo {
-        uint256 lastRewardBlock;  // Last block number that Rewards distribution occurs.
+        uint256 lastRewardTimestamp;  // Last block number that Rewards distribution occurs.
         uint256 accRewardPerShare; // Accumulated reward per share, times 1e12. See below.
     }
 
     // The SYRUP TOKEN!
     IBEP20 public syrup;
     // rewards created per block.
-    uint256 public rewardPerBlock;
+    uint256 public rewardPerTimestamp;
 
     // Info.
     PoolInfo public poolInfo;
@@ -50,9 +50,9 @@ contract WAGStakingPool {
     address[] public addressList;
 
     // The block number when mining starts.
-    uint256 public startBlock;
+    uint256 public startTimestamp;
     // The block number when mining ends.
-    uint256 public bonusEndBlock;
+    uint256 public bonusEndTimestamp;
 
     event Deposit(address indexed user, uint256 amount);
     event Withdraw(address indexed user, uint256 amount);
@@ -60,18 +60,18 @@ contract WAGStakingPool {
 
     constructor(
         IBEP20 _syrup,
-        uint256 _rewardPerBlock,
-        uint256 _startBlock,
-        uint256 _endBlock
+        uint256 _rewardPerTimestamp,
+        uint256 _startTimestamp,
+        uint256 _endTimestamp
     ) public {
         syrup = _syrup;
-        rewardPerBlock = _rewardPerBlock;
-        startBlock = _startBlock;
-        bonusEndBlock = _endBlock;
+        rewardPerTimestamp = _rewardPerTimestamp;
+        startTimestamp = _startTimestamp;
+        bonusEndTimestamp = _endTimestamp;
 
         // staking pool
         poolInfo = PoolInfo({
-            lastRewardBlock: startBlock,
+            lastRewardTimestamp: startTimestamp,
             accRewardPerShare: 0
         });
     }
@@ -82,12 +82,12 @@ contract WAGStakingPool {
 
     // Return reward multiplier over the given _from to _to block.
     function getMultiplier(uint256 _from, uint256 _to) internal view returns (uint256) {
-        if (_to <= bonusEndBlock) {
+        if (_to <= bonusEndTimestamp) {
             return _to.sub(_from);
-        } else if (_from >= bonusEndBlock) {
+        } else if (_from >= bonusEndTimestamp) {
             return 0;
         } else {
-            return bonusEndBlock.sub(_from);
+            return bonusEndTimestamp.sub(_from);
         }
     }
 
@@ -97,9 +97,9 @@ contract WAGStakingPool {
         UserInfo storage user = userInfo[_user];
         uint256 accRewardPerShare = pool.accRewardPerShare;
         uint256 stakedSupply = syrup.balanceOf(address(this));
-        if (block.number > pool.lastRewardBlock && stakedSupply != 0) {
-            uint256 multiplier = getMultiplier(pool.lastRewardBlock, block.number);
-            uint256 tokenReward = multiplier.mul(rewardPerBlock);
+        if (block.timestamp > pool.lastRewardTimestamp && stakedSupply != 0) {
+            uint256 multiplier = getMultiplier(pool.lastRewardTimestamp, block.timestamp);
+            uint256 tokenReward = multiplier.mul(rewardPerTimestamp);
             accRewardPerShare = accRewardPerShare.add(tokenReward.mul(1e12).div(stakedSupply));
         }
         return user.amount.mul(accRewardPerShare).div(1e12).sub(user.rewardDebt).add(user.rewardPending);
@@ -107,19 +107,19 @@ contract WAGStakingPool {
 
     // Update reward variables of the given pool to be up-to-date.
     function updatePool() public {
-        if (block.number <= poolInfo.lastRewardBlock) {
+        if (block.timestamp <= poolInfo.lastRewardTimestamp) {
             return;
         }
         uint256 syrupSupply = syrup.balanceOf(address(this));
         if (syrupSupply == 0) {
-            poolInfo.lastRewardBlock = block.number;
+            poolInfo.lastRewardTimestamp = block.timestamp;
             return;
         }
-        uint256 multiplier = getMultiplier(poolInfo.lastRewardBlock, block.number);
-        uint256 tokenReward = multiplier.mul(rewardPerBlock);
+        uint256 multiplier = getMultiplier(poolInfo.lastRewardTimestamp, block.timestamp);
+        uint256 tokenReward = multiplier.mul(rewardPerTimestamp);
 
         poolInfo.accRewardPerShare = poolInfo.accRewardPerShare.add(tokenReward.mul(1e12).div(syrupSupply));
-        poolInfo.lastRewardBlock = block.number;
+        poolInfo.lastRewardTimestamp = block.timestamp;
     }
 
 

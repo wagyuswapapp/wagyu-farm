@@ -22,19 +22,19 @@ contract WAGStakingPoolInitializable is Ownable, ReentrancyGuard {
     uint256 public accTokenPerShare;
 
     // The block number when WAGYU mining ends.
-    uint256 public bonusEndBlock;
+    uint256 public bonusEndTimestamp;
 
     // The block number when WAGYU mining starts.
-    uint256 public startBlock;
+    uint256 public startTimestamp;
 
     // The block number of the last pool update
-    uint256 public lastRewardBlock;
+    uint256 public lastRewardTimestamp;
 
     // The pool limit (0 if none)
     uint256 public poolLimitPerUser;
 
     // WAGYU tokens created per block.
-    uint256 public rewardPerBlock;
+    uint256 public rewardPerSecond;
 
     // The precision factor
     uint256 public PRECISION_FACTOR;
@@ -56,8 +56,8 @@ contract WAGStakingPoolInitializable is Ownable, ReentrancyGuard {
     event AdminTokenRecovery(address tokenRecovered, uint256 amount);
     event Deposit(address indexed user, uint256 amount);
     event EmergencyWithdraw(address indexed user, uint256 amount);
-    event NewStartAndEndBlocks(uint256 startBlock, uint256 endBlock);
-    event NewRewardPerBlock(uint256 rewardPerBlock);
+    event NewStartAndEndBlocks(uint256 startTimestamp, uint256 endBlock);
+    event NewrewardPerSecond(uint256 rewardPerSecond);
     event NewPoolLimit(uint256 poolLimitPerUser);
     event RewardsStop(uint256 blockNumber);
     event Withdraw(address indexed user, uint256 amount);
@@ -70,18 +70,18 @@ contract WAGStakingPoolInitializable is Ownable, ReentrancyGuard {
      * @notice Initialize the contract
      * @param _stakedToken: staked token address
      * @param _rewardToken: reward token address
-     * @param _rewardPerBlock: reward per block (in rewardToken)
-     * @param _startBlock: start block
-     * @param _bonusEndBlock: end block
+     * @param _rewardPerSecond: reward per block (in rewardToken)
+     * @param _startTimestamp: start block
+     * @param _bonusEndTimestamp: end block
      * @param _poolLimitPerUser: pool limit per user in stakedToken (if any, else 0)
      * @param _admin: admin address with ownership
      */
     function initialize(
         IBEP20 _stakedToken,
         IBEP20 _rewardToken,
-        uint256 _rewardPerBlock,
-        uint256 _startBlock,
-        uint256 _bonusEndBlock,
+        uint256 _rewardPerSecond,
+        uint256 _startTimestamp,
+        uint256 _bonusEndTimestamp,
         uint256 _poolLimitPerUser,
         address _admin
     ) external {
@@ -93,9 +93,9 @@ contract WAGStakingPoolInitializable is Ownable, ReentrancyGuard {
 
         stakedToken = _stakedToken;
         rewardToken = _rewardToken;
-        rewardPerBlock = _rewardPerBlock;
-        startBlock = _startBlock;
-        bonusEndBlock = _bonusEndBlock;
+        rewardPerSecond = _rewardPerSecond;
+        startTimestamp = _startTimestamp;
+        bonusEndTimestamp = _bonusEndTimestamp;
 
         if (_poolLimitPerUser > 0) {
             hasUserLimit = true;
@@ -107,8 +107,8 @@ contract WAGStakingPoolInitializable is Ownable, ReentrancyGuard {
 
         PRECISION_FACTOR = uint256(10**(uint256(30).sub(decimalsRewardToken)));
 
-        // Set the lastRewardBlock as the startBlock
-        lastRewardBlock = startBlock;
+        // Set the lastRewardTimestamp as the startTimestamp
+        lastRewardTimestamp = startTimestamp;
 
         // Transfer ownership to the admin address who becomes owner of the contract
         transferOwnership(_admin);
@@ -215,7 +215,7 @@ contract WAGStakingPoolInitializable is Ownable, ReentrancyGuard {
      * @dev Only callable by owner
      */
     function stopReward() external onlyOwner {
-        bonusEndBlock = block.number;
+        bonusEndTimestamp = block.timestamp;
     }
 
     /*
@@ -239,32 +239,32 @@ contract WAGStakingPoolInitializable is Ownable, ReentrancyGuard {
     /*
      * @notice Update reward per block
      * @dev Only callable by owner.
-     * @param _rewardPerBlock: the reward per block
+     * @param _rewardPerSecond: the reward per block
      */
-    function updateRewardPerBlock(uint256 _rewardPerBlock) external onlyOwner {
-        require(block.number < startBlock, "Pool has started");
-        rewardPerBlock = _rewardPerBlock;
-        emit NewRewardPerBlock(_rewardPerBlock);
+    function updaterewardPerSecond(uint256 _rewardPerSecond) external onlyOwner {
+        require(block.timestamp < startTimestamp, "Pool has started");
+        rewardPerSecond = _rewardPerSecond;
+        emit NewrewardPerSecond(_rewardPerSecond);
     }
 
     /**
      * @notice It allows the admin to update start and end blocks
      * @dev This function is only callable by owner.
-     * @param _startBlock: the new start block
-     * @param _bonusEndBlock: the new end block
+     * @param _startTimestamp: the new start block
+     * @param _bonusEndTimestamp: the new end block
      */
-    function updateStartAndEndBlocks(uint256 _startBlock, uint256 _bonusEndBlock) external onlyOwner {
-        require(block.number < startBlock, "Pool has started");
-        require(_startBlock < _bonusEndBlock, "New startBlock must be lower than new endBlock");
-        require(block.number < _startBlock, "New startBlock must be higher than current block");
+    function updateStartAndEndBlocks(uint256 _startTimestamp, uint256 _bonusEndTimestamp) external onlyOwner {
+        require(block.timestamp < startTimestamp, "Pool has started");
+        require(_startTimestamp < _bonusEndTimestamp, "New startTimestamp must be lower than new endBlock");
+        require(block.timestamp < _startTimestamp, "New startTimestamp must be higher than current block");
 
-        startBlock = _startBlock;
-        bonusEndBlock = _bonusEndBlock;
+        startTimestamp = _startTimestamp;
+        bonusEndTimestamp = _bonusEndTimestamp;
 
-        // Set the lastRewardBlock as the startBlock
-        lastRewardBlock = startBlock;
+        // Set the lastRewardTimestamp as the startTimestamp
+        lastRewardTimestamp = startTimestamp;
 
-        emit NewStartAndEndBlocks(_startBlock, _bonusEndBlock);
+        emit NewStartAndEndBlocks(_startTimestamp, _bonusEndTimestamp);
     }
 
     /*
@@ -275,9 +275,9 @@ contract WAGStakingPoolInitializable is Ownable, ReentrancyGuard {
     function pendingReward(address _user) external view returns (uint256) {
         UserInfo storage user = userInfo[_user];
         uint256 stakedTokenSupply = stakedToken.balanceOf(address(this));
-        if (block.number > lastRewardBlock && stakedTokenSupply != 0) {
-            uint256 multiplier = _getMultiplier(lastRewardBlock, block.number);
-            uint256 wagyuReward = multiplier.mul(rewardPerBlock);
+        if (block.timestamp > lastRewardTimestamp && stakedTokenSupply != 0) {
+            uint256 multiplier = _getMultiplier(lastRewardTimestamp, block.timestamp);
+            uint256 wagyuReward = multiplier.mul(rewardPerSecond);
             uint256 adjustedTokenPerShare =
             accTokenPerShare.add(wagyuReward.mul(PRECISION_FACTOR).div(stakedTokenSupply));
             return user.amount.mul(adjustedTokenPerShare).div(PRECISION_FACTOR).sub(user.rewardDebt);
@@ -290,21 +290,21 @@ contract WAGStakingPoolInitializable is Ownable, ReentrancyGuard {
      * @notice Update reward variables of the given pool to be up-to-date.
      */
     function _updatePool() internal {
-        if (block.number <= lastRewardBlock) {
+        if (block.timestamp <= lastRewardTimestamp) {
             return;
         }
 
         uint256 stakedTokenSupply = stakedToken.balanceOf(address(this));
 
         if (stakedTokenSupply == 0) {
-            lastRewardBlock = block.number;
+            lastRewardTimestamp = block.timestamp;
             return;
         }
 
-        uint256 multiplier = _getMultiplier(lastRewardBlock, block.number);
-        uint256 wagyuReward = multiplier.mul(rewardPerBlock);
+        uint256 multiplier = _getMultiplier(lastRewardTimestamp, block.timestamp);
+        uint256 wagyuReward = multiplier.mul(rewardPerSecond);
         accTokenPerShare = accTokenPerShare.add(wagyuReward.mul(PRECISION_FACTOR).div(stakedTokenSupply));
-        lastRewardBlock = block.number;
+        lastRewardTimestamp = block.timestamp;
     }
 
     /*
@@ -313,12 +313,12 @@ contract WAGStakingPoolInitializable is Ownable, ReentrancyGuard {
      * @param _to: block to finish
      */
     function _getMultiplier(uint256 _from, uint256 _to) internal view returns (uint256) {
-        if (_to <= bonusEndBlock) {
+        if (_to <= bonusEndTimestamp) {
             return _to.sub(_from);
-        } else if (_from >= bonusEndBlock) {
+        } else if (_from >= bonusEndTimestamp) {
             return 0;
         } else {
-            return bonusEndBlock.sub(_from);
+            return bonusEndTimestamp.sub(_from);
         }
     }
 }

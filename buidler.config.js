@@ -26,19 +26,22 @@ module.exports = {
       runs: 200
     }
   },
-
+  mocha: {
+    timeout: 40000
+  },
   networks: {
     buidlerevm: {
     },
     development: {
-      url: "https://testnet.velas.com/rpc",
+      url: "https://traces-api.testnet.veladev.net/bridges",
       port: 7545,
       network_id: "101"
     },
     mainnet: {
-      url: "https://mainnet.velas.com/rpc",
+      url: "https://wag.mainnet.veladev.net/rpc",
       port: 7545,
-      network_id: "106"
+      network_id: "106",
+      accounts: []
     },
     test: {
       url: "http://127.0.0.1:7545",

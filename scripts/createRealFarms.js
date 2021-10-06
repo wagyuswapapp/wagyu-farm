@@ -5,7 +5,6 @@ async function sleep() {
   return await timeout(10000);
 }
 
-
 async function createTestFarms(_lpToken) {
   console.log("create farm " + _lpToken)
   const signers = await ethers.getSigners();
@@ -31,6 +30,11 @@ function get(chainId) {
   return data;
 }
 
+const createRealFarm = async (data, address)=> {
+  const name = Object.keys(data).find((x)=> data[x].tokenB == address)
+  return await createTestFarms(data[name].pair);
+}
+
 async function main() {
 
   const { chainId } = await ethers.provider.getNetwork();
@@ -39,11 +43,11 @@ async function main() {
 
   const admins = JSON.parse(require("fs").readFileSync('../wagyu-addresses/admins.json', 'utf8'))
 
-  const defaultTokens = admins.defaultTokens[chainId.toString()];
+  const wrappedTokens = admins.wrappedTokens[chainId.toString()];
 
-  for (var j=0; j < defaultTokens.length; j++) {
-      const name = "VLX_" + defaultTokens[j] + "_LP"
-      await createTestFarms(data[name].pair);
+  for (var j=0; j < wrappedTokens.length; j++) {
+
+      await createRealFarm(data, wrappedTokens[j])
   }
 
   

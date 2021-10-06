@@ -1,9 +1,8 @@
 function timeout(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
-async function sleep(fn, ...args) {
-  await timeout(3000);
-  return fn(...args);
+async function sleep() {
+  return await timeout(10000);
 }
 
 
@@ -17,6 +16,7 @@ async function mint(name) {
   const token = await Token.mint("100000000000000000000000", { nonce, gasLimit: 9000000 })
   
   console.log("done ", token);
+  await sleep(3000)
   return true
 }
 

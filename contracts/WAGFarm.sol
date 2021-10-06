@@ -55,7 +55,7 @@ contract WAGFarm is Ownable {
     struct PoolInfo {
         IBEP20 lpToken;           // Address of LP token contract.
         uint256 allocPoint;       // How many allocation points assigned to this pool. CAKEs to distribute per block.
-        uint256 lastRewardBlock;  // Last block number that CAKEs distribution occurs.
+        uint256 lastRewardTimestamp;  // Last block number that CAKEs distribution occurs.
         uint256 accCakePerShare; // Accumulated CAKEs per share, times 1e12. See below.
     }
 
@@ -66,7 +66,7 @@ contract WAGFarm is Ownable {
     // Dev address.
     address public devaddr;
     // CAKE tokens created per block.
-    uint256 public cakePerBlock;
+    uint256 public cakePerSecond;
     // Bonus muliplier for early cake makers.
     uint256 public BONUS_MULTIPLIER = 1;
     // The migrator contract. It has a lot of power. Can only be set through governance (owner).
@@ -79,7 +79,7 @@ contract WAGFarm is Ownable {
     // Total allocation points. Must be the sum of all allocation points in all pools.
     uint256 public totalAllocPoint = 0;
     // The block number when CAKE mining starts.
-    uint256 public startBlock;
+    uint256 public startTimestamp;
 
     event Deposit(address indexed user, uint256 indexed pid, uint256 amount);
     event Withdraw(address indexed user, uint256 indexed pid, uint256 amount);
@@ -89,20 +89,20 @@ contract WAGFarm is Ownable {
         WAGToken _cake,
         WAGStake _syrup,
         address _devaddr,
-        uint256 _cakePerBlock,
-        uint256 _startBlock
+        uint256 _cakePerSecond,
+        uint256 _startTimestamp
     ) public {
         cake = _cake;
         syrup = _syrup;
         devaddr = _devaddr;
-        cakePerBlock = _cakePerBlock;
-        startBlock = _startBlock;
+        cakePerSecond = _cakePerSecond;
+        startTimestamp = _startTimestamp;
 
         // staking pool
         poolInfo.push(PoolInfo({
             lpToken: _cake,
             allocPoint: 1000,
-            lastRewardBlock: startBlock,
+            lastRewardTimestamp: _startTimestamp,
             accCakePerShare: 0
         }));
 
@@ -124,12 +124,12 @@ contract WAGFarm is Ownable {
         if (_withUpdate) {
             massUpdatePools();
         }
-        uint256 lastRewardBlock = block.number > startBlock ? block.number : startBlock;
+        uint256 lastRewardTimestamp = block.timestamp > startTimestamp ? block.timestamp : startTimestamp;
         totalAllocPoint = totalAllocPoint.add(_allocPoint);
         poolInfo.push(PoolInfo({
             lpToken: _lpToken,
             allocPoint: _allocPoint,
-            lastRewardBlock: lastRewardBlock,
+            lastRewardTimestamp: lastRewardTimestamp,
             accCakePerShare: 0
         }));
         updateStakingPool();
@@ -189,9 +189,9 @@ contract WAGFarm is Ownable {
         UserInfo storage user = userInfo[_pid][_user];
         uint256 accCakePerShare = pool.accCakePerShare;
         uint256 lpSupply = pool.lpToken.balanceOf(address(this));
-        if (block.number > pool.lastRewardBlock && lpSupply != 0) {
-            uint256 multiplier = getMultiplier(pool.lastRewardBlock, block.number);
-            uint256 cakeReward = multiplier.mul(cakePerBlock).mul(pool.allocPoint).div(totalAllocPoint);
+        if (block.timestamp > pool.lastRewardTimestamp && lpSupply != 0) {
+            uint256 multiplier = getMultiplier(pool.lastRewardTimestamp, block.timestamp);
+            uint256 cakeReward = multiplier.mul(cakePerSecond).mul(pool.allocPoint).div(totalAllocPoint);
             accCakePerShare = accCakePerShare.add(cakeReward.mul(1e12).div(lpSupply));
         }
         return user.amount.mul(accCakePerShare).div(1e12).sub(user.rewardDebt);
@@ -209,20 +209,20 @@ contract WAGFarm is Ownable {
     // Update reward variables of the given pool to be up-to-date.
     function updatePool(uint256 _pid) public {
         PoolInfo storage pool = poolInfo[_pid];
-        if (block.number <= pool.lastRewardBlock) {
+        if (block.timestamp <= pool.lastRewardTimestamp) {
             return;
         }
         uint256 lpSupply = pool.lpToken.balanceOf(address(this));
         if (lpSupply == 0) {
-            pool.lastRewardBlock = block.number;
+            pool.lastRewardTimestamp = block.timestamp;
             return;
         }
-        uint256 multiplier = getMultiplier(pool.lastRewardBlock, block.number);
-        uint256 cakeReward = multiplier.mul(cakePerBlock).mul(pool.allocPoint).div(totalAllocPoint);
+        uint256 multiplier = getMultiplier(pool.lastRewardTimestamp, block.timestamp);
+        uint256 cakeReward = multiplier.mul(cakePerSecond).mul(pool.allocPoint).div(totalAllocPoint);
         cake.mint(devaddr, cakeReward.div(10));
         cake.mint(address(syrup), cakeReward);
         pool.accCakePerShare = pool.accCakePerShare.add(cakeReward.mul(1e12).div(lpSupply));
-        pool.lastRewardBlock = block.number;
+        pool.lastRewardTimestamp = block.timestamp;
     }
 
     // Deposit LP tokens to WAGFarm for WAG allocation.
