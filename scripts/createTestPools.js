@@ -32,12 +32,19 @@ async function createTestPool(name) {
   const WAGStakingFactory = await ethers.getContractAt("WAGStakingFactory", data.WAGStakingFactory);
   const _stakedToken  = data[name]   //IBEP20
   const _rewardToken = data.WAGToken //IBEP20
-  const _rewardPerSecond = "1000000000"; //uint256
+
+  if (data[name] == null)
+    throw "expected " + name;
+
+  if (data.WAGToken == null)
+    throw "expected WAGToken";
+
+  const _rewardPerSecond = "1000000000000000000"; //uint256
   //moment().utc().unix() / 1000
   const _startTimestamp = parseInt(new Date().getTime() / 1000) //uint256
-  const bonusPeriodInSeconds = 100000
+  const bonusPeriodInSeconds = 2419200
   const _bonusEndTimestamp = _startTimestamp + bonusPeriodInSeconds; //uint256
-  const _poolLimitPerUser = "1000000000000000000000" //uint256
+  const _poolLimitPerUser = "10000000000000000000000" //uint256
   const _admin = signers[0]._address; //address
   const SousPool = await WAGStakingFactory.deployPool(_stakedToken,_rewardToken, _rewardPerSecond,  _startTimestamp, _bonusEndTimestamp,  _poolLimitPerUser, _admin, { nonce, gasLimit: 9000000 })
   

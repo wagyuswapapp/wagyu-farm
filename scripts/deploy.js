@@ -69,9 +69,9 @@ async function main() {
 
   const _startTimestamp = parseInt(new Date().getTime() / 1000)
   const _devaddr = admins._devaddr
-  const bonusPeriodSeconds = 10000
-  const bonusEndTimestamp = _startTimestamp + bonusPeriodSeconds
-  const vlxStakingRewardPerSecond = '42000000000000000'
+  //const bonusPeriodSeconds = 10000
+  //const bonusEndTimestamp = _startTimestamp + bonusPeriodSeconds
+  //const vlxStakingRewardPerSecond = '42000000000000000'
   
   //Timelock
   const Timelock = await deploy("Timelock", [_devaddr, 21700]);
@@ -82,7 +82,7 @@ async function main() {
 
   await deploy("VaultOwner", [WagyuVault]);
 
-  await deploy("VLXStaking", [WVLX, WAGToken, vlxStakingRewardPerSecond, _startTimestamp, bonusEndTimestamp, _devaddr, WVLX]);
+  //await deploy("VLXStaking", [WVLX, WAGToken, vlxStakingRewardPerSecond, _startTimestamp, bonusEndTimestamp, _devaddr, WVLX]);
 
   await deploy("WAGStakingFactory");
 

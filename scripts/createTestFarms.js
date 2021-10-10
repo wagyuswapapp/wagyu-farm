@@ -13,9 +13,13 @@ async function createTestFarms(_lpToken) {
   const { chainId } = await ethers.provider.getNetwork();
   //const blockNumber = await ethers.provider.getBlockNumber();
   const data = get(chainId)
+
+  if (data.WAGFarm == null)
+    throw "expected WAGFarm";
+
   const WAGFarm = await ethers.getContractAt("WAGFarm", data.WAGFarm);
-  const _allocPoint  = "1000000000000000000000"
-  const _withUpdate = false
+  const _allocPoint  = "100"
+  const _withUpdate = true
   const SousPool = await WAGFarm.add(_allocPoint,_lpToken, _withUpdate, { nonce, gasLimit: 9000000 })
   await sleep()
   return true

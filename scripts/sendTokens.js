@@ -12,6 +12,10 @@ async function mint(name) {
   const nonce = await ethers.provider.getTransactionCount(signers[0]._address)
   const { chainId } = await ethers.provider.getNetwork();
   const data = get(chainId)
+
+  if (data[name] == null)
+    throw "expected" + data[name];
+
   const Token = await ethers.getContractAt("BEP20", data[name]);
   const token = await Token.mint("100000000000000000000000", { nonce, gasLimit: 9000000 })
   
@@ -27,6 +31,11 @@ async function send(name, DEV_TEST_ADDRESS) {
   const nonce = await ethers.provider.getTransactionCount(signers[0]._address)
   const { chainId } = await ethers.provider.getNetwork();
   const data = get(chainId)
+
+  if (data[name] == null)
+    throw "expected" + data[name];
+
+
   const Token = await ethers.getContractAt("BEP20", data[name]);
   const token = await Token.transfer(DEV_TEST_ADDRESS, "100000000000000000000", { nonce, gasLimit: 9000000 })
   

@@ -12,6 +12,10 @@ async function sleep() {
     const nonce = await ethers.provider.getTransactionCount(signers[0]._address)
     const { chainId } = await ethers.provider.getNetwork();
     const data = get(chainId)
+
+    if (data.WAGToken == null)
+      throw "expected WAGToken";
+
     const WAGToken = await ethers.getContractAt("WAGToken", data.WAGToken);
     
     const token = await WAGToken['mint(address,uint256)'](address, amount, { nonce, gasLimit: 9000000 })
@@ -37,6 +41,10 @@ async function sleep() {
     const { chainId } = await ethers.provider.getNetwork();
     
     const data = get(chainId)
+
+    if (data.WAGStakingFactory == null)
+      throw "expected WAGStakingFactory";
+
 
     const WAGStakingFactory = await ethers.getContractAt("WAGStakingFactory", data.WAGStakingFactory);
     
