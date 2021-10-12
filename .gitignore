@@ -2,7 +2,7 @@
 /build/
 
 node_modules
-
+buidler.config.js
 #Buidler files
 cache
 artifacts
