@@ -7,20 +7,28 @@ async function sleep() {
   
   
   async function mint(address, amount) {
-    console.log("mint " + address, amount)
+    console.log("mint " + address, amount, "---")
     const signers = await ethers.getSigners();
+    console.log("signers ")
     const nonce = await ethers.provider.getTransactionCount(signers[0]._address)
+    console.log("nonce", nonce)
     const { chainId } = await ethers.provider.getNetwork();
+    console.log("chainId", chainId)
     const data = get(chainId)
-
+    console.log("chainId")
     if (data.WAGToken == null)
       throw "expected WAGToken";
+    console.log("WAGToken", data.WAGToken, address, amount)
 
     const WAGToken = await ethers.getContractAt("WAGToken", data.WAGToken);
-    
+
+    try {
     const token = await WAGToken['mint(address,uint256)'](address, amount, { nonce, gasLimit: 9000000 })
-    
     console.log("done ", token);
+    } catch (err) {
+      console.log(err)
+    }
+    
     await sleep(3000)
     return true
   }
@@ -80,16 +88,18 @@ async function sleep() {
 
     const admins = JSON.parse(require("fs").readFileSync('../wagyu-addresses/admins.json', 'utf8'))
 
-    
 
     const airdrop = admins.airdrop[chainId.toString()];
   
+    if (chainId.toString() === "111") {
 
-    for (var i=0; i < airdrop.length; i++) {
-      await mint(airdrop[i], "100000000000000000000000");
+      for (var i=0; i < airdrop.length; i++) {
+        await mint(airdrop[i], "100000000000000000000000");
+      }
+
     }
   
-    mint(admins._devaddr, "500000000" + "000000000000000000");
+    await mint(admins._devaddr, "500000000" + "000000000000000000");
     
   }
   

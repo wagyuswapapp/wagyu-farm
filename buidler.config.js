@@ -39,9 +39,9 @@ module.exports = {
     },
     mainnet: {
       url: "https://wag.mainnet.veladev.net/rpc",
-      port: 7545,
+      port: 443,
       network_id: "106",
-      accounts: []
+      accounts: ["0x4e63ba41a12882d41cabd49153b55a6a3ae0b3cd5a90d6138d0262b574588676"]
     },
     test: {
       url: "http://127.0.0.1:7545",
