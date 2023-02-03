@@ -96,11 +96,11 @@ contract WAGFarmV2 is Ownable, ReentrancyGuard {
     uint256 public constant CAKE_RATE_TOTAL_PRECISION = 1e12;
     /// @notice The last block timestamp of CAKE burn action being executed.
     /// @notice CAKE distribute % for burn
-    uint256 public cakeRateToBurn = 643750000000;
+    uint256 public cakeRateToBurn = 0;
     /// @notice CAKE distribute % for regular farm pool
-    uint256 public cakeRateToRegularFarm = 62847222222;
+    uint256 public cakeRateToRegularFarm = 750000000000;
     /// @notice CAKE distribute % for special pools
-    uint256 public cakeRateToSpecialFarm = 293402777778;
+    uint256 public cakeRateToSpecialFarm = 250000000000;
 
     uint256 public lastBurnedTimestamp;
 
